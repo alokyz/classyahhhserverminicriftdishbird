@@ -1,0 +1,48 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Frontend
+node_modules/
+frontend/dist/
+frontend/coverage/
+
+# Local configuration and runtime data
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite3
+*.db
+*.sqlite-*
+*.sqlite3-*
+*-wal
+*-shm
+data/
+backups/
+*.log
+
+# Minecraft server data if a server directory is placed inside this workspace
+world/
+world_nether/
+world_the_end/
+worlds/
+mods/
+logs/
+server.properties
+eula.txt
+ops.json
+whitelist.json
+banned-ips.json
+banned-players.json
+usercache.json
+
+# OS/editor
+.DS_Store
+*~
+.idea/
+.vscode/
