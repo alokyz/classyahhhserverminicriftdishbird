@@ -12,6 +12,16 @@ import {
 
 type Panel<T> = { data: T | null; error: string | null; loading: boolean };
 const emptyPanel = <T,>(): Panel<T> => ({ data: null, error: null, loading: true });
+const REFRESH_INTERVAL_MS = 3_000;
+
+const dashboardSections = [
+  { id: "overview", label: "Overview", icon: "grid" },
+  { id: "players", label: "Players", icon: "users" },
+  { id: "performance", label: "Performance", icon: "activity" },
+  { id: "console", label: "Console & logs", icon: "terminal" },
+  { id: "mods", label: "Mods", icon: "box" },
+  { id: "backups", label: "Backups", icon: "archive" },
+] as const;
 
 function useDashboard() {
   const [health, setHealth] = useState<Panel<HealthResponse>>(emptyPanel);
@@ -57,7 +67,7 @@ function useDashboard() {
 
   useEffect(() => {
     void refresh();
-    const timer = window.setInterval(() => void refresh(), 10_000);
+    const timer = window.setInterval(() => void refresh(), REFRESH_INTERVAL_MS);
     return () => window.clearInterval(timer);
   }, [refresh]);
 
@@ -84,7 +94,7 @@ function formatPercent(value: number | null | undefined): string {
 function formatTimestamp(value: string | undefined): string {
   if (!value) return "—";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
 function formatUptime(value: number | null | undefined): string {
@@ -130,6 +140,24 @@ function Metric({ label, value, unit, icon, detail }: { label: string; value: st
 
 function App() {
   const data = useDashboard();
+  const [activeSection, setActiveSection] = useState("overview");
+
+  useEffect(() => {
+    if (!("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
+      if (visible) setActiveSection(visible.target.id);
+    }, { rootMargin: "-20% 0px -65% 0px", threshold: [0, 0.1, 0.25] });
+
+    for (const { id } of dashboardSections) {
+      const section = document.getElementById(id);
+      if (section) observer.observe(section);
+    }
+    return () => observer.disconnect();
+  }, []);
+
   const status = data.status.data;
   const players = data.players.data;
   const metrics = data.metrics.data;
@@ -157,8 +185,6 @@ function App() {
       ? "It’s quiet in here. No players are online."
       : "Player names are unavailable from the server.";
 
-  const goTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-
   return <div className="app-shell">
     <aside className="sidebar">
       <a className="brand" href="#top" aria-label="Classyhhh Server Command Center home">
@@ -167,12 +193,13 @@ function App() {
       </a>
       <div className="workspace-label">WORKSPACE</div>
       <nav className="side-nav" aria-label="Dashboard sections">
-        <button className="nav-item nav-item--active" onClick={() => goTo("overview")}><Icon name="grid"/> Overview</button>
-        <button className="nav-item" onClick={() => goTo("players")}><Icon name="users"/> Players</button>
-        <button className="nav-item" onClick={() => goTo("performance")}><Icon name="activity"/> Performance</button>
-        <button className="nav-item" onClick={() => goTo("console")}><Icon name="terminal"/> Console & logs</button>
-        <button className="nav-item" onClick={() => goTo("mods")}><Icon name="box"/> Mods</button>
-        <button className="nav-item" onClick={() => goTo("backups")}><Icon name="archive"/> Backups</button>
+        {dashboardSections.map(({ id, label, icon }) => <a
+          key={id}
+          className={`nav-item${activeSection === id ? " nav-item--active" : ""}`}
+          href={`#${id}`}
+          aria-current={activeSection === id ? "location" : undefined}
+          onClick={() => setActiveSection(id)}
+        ><Icon name={icon}/>{label}</a>)}
       </nav>
       <div className="sidebar-bottom">
         <div className="privacy-card"><span className="privacy-dot"/><div><strong>Local by default</strong><small>Dashboard is designed for your machine.</small></div></div>
@@ -197,7 +224,7 @@ function App() {
           <h1>Good things are <em>loading.</em></h1>
           <p className="welcome-subtitle">Your little window into the world you built.</p>
         </div>
-        <div className="last-updated"><span className="pulse-dot"/> Updated {data.lastUpdated ? data.lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}<span className="update-separator">·</span> Auto refresh 10s</div>
+        <div className="last-updated" aria-live="polite"><span className="pulse-dot"/> Updated {data.lastUpdated ? data.lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—"}<span className="update-separator">·</span> Live updates every 3s</div>
       </section>
 
       <section className="server-banner" aria-label="Minecraft server status">

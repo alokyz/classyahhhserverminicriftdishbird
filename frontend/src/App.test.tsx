@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import App, { formatBytes, formatPercent } from "./App";
 
 afterEach(() => {
@@ -66,5 +66,21 @@ describe("dashboard API rendering", () => {
 
     expect(await screen.findByText("The server reports 2 online, but did not provide their names.")).toBeInTheDocument();
     expect(screen.queryByText("It’s quiet in here. No players are online.")).not.toBeInTheDocument();
+  });
+
+  it("navigates to dashboard sections and highlights the selected section", async () => {
+    stubDashboardApi({ state: "available", online: 0, max: 20, players: [], source: "status_protocol" });
+
+    render(<App />);
+
+    const playersLink = screen.getByRole("link", { name: "Players" });
+    expect(playersLink).toHaveAttribute("href", "#players");
+    fireEvent.click(playersLink);
+    expect(playersLink).toHaveAttribute("aria-current", "location");
+
+    const modsLink = screen.getByRole("link", { name: "Mods" });
+    expect(modsLink).toHaveAttribute("href", "#mods");
+    fireEvent.click(modsLink);
+    expect(modsLink).toHaveAttribute("aria-current", "location");
   });
 });

@@ -32,7 +32,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--green); outline
 .brand-name span { display: block; margin-top: 1px; color: #74817e; font-family: inherit; font-size: 10px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; }
 .workspace-label { margin: 43px 9px 12px; color: #616d70; font-family: var(--mono); font-size: 9px; letter-spacing: .14em; }
 .side-nav { display: grid; gap: 4px; }
-.nav-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 11px; border: 1px solid transparent; border-radius: 8px; color: #8e9a9a; background: transparent; text-align: left; font-size: 12px; cursor: pointer; transition: color .18s, background .18s, border-color .18s; }
+.nav-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 11px; border: 1px solid transparent; border-radius: 8px; color: #8e9a9a; background: transparent; text-align: left; text-decoration: none; font-size: 12px; cursor: pointer; transition: color .18s, background .18s, border-color .18s; }
 .nav-item:hover { color: #d8e2db; background: #171e22; }
 .nav-item--active { border-color: #294334; color: #b8e9c5; background: #1b2a21; }
 .nav-item--active svg { color: #77dc9e; }
